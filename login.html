@@ -64,13 +64,15 @@
         const snap = await getDoc(ref);
 
         if (snap.exists()) {
-          if (remember) {
-            localStorage.setItem("savedEmail", email);
-          } else {
-            localStorage.removeItem("savedEmail");
-          }
-          // 🔑 Marca sessão como ativa
+          // 🔑 Marca sessão como ativa (sempre)
           localStorage.setItem("isLogged", "true");
+
+          if (remember) {
+            localStorage.setItem("savedEmail", email); // fica salvo
+          } else {
+            localStorage.removeItem("savedEmail"); // remove se tinha
+            sessionStorage.setItem("sessionEmail", email); // só até fechar aba
+          }
 
           errorMsg.textContent = "✅ Acesso liberado!";
           setTimeout(() => window.location.href = "index.html", 500);
