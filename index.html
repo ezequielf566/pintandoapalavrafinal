@@ -132,6 +132,13 @@
       display: none;
       z-index: 9999;
     }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.6rem; }
+      .menu { max-width: 90%; }
+      .socials { flex-direction: column; align-items: center; }
+      .socials button { width: 100%; max-width: 200px; }
+    }
   </style>
 </head>
 <body>
@@ -185,14 +192,12 @@ window.onpopstate = function(event) {
     document.getElementById("menuContainer").style.display = "block";
   }
 };
-
 function showMsg(texto) {
   const msg = document.getElementById("msg");
   msg.innerText = texto;
   msg.style.display = "block";
   setTimeout(() => { msg.style.display = "none"; }, 3000);
 }
-
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
@@ -200,14 +205,12 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('❌ Service Worker falhou:', err));
   });
 }
-
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   const installBtn = document.getElementById("installBtn");
   installBtn.style.display = "inline-block";
-
   installBtn.addEventListener("click", async () => {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -243,31 +246,34 @@ window.addEventListener('beforeinstallprompt', (e) => {
     const email = localStorage.getItem("savedEmail");
     const isLogged = localStorage.getItem("isLogged");
 
+    console.log("🔍 Validando acesso:", { email, isLogged });
+
     if (!email || isLogged !== "true") {
-      window.location.href = "login.html";
+      window.location.replace("login.html");
       return;
     }
 
     try {
-      const ref = doc(db, "usuarios", email);
+      const ref = doc(db, "usuarios", email.toLowerCase());
       const snap = await getDoc(ref);
       if (!snap.exists()) {
+        console.warn("⚠️ Documento não encontrado no Firestore");
         localStorage.removeItem("savedEmail");
         localStorage.removeItem("isLogged");
-        window.location.href = "login.html";
+        window.location.replace("login.html");
       }
     } catch (err) {
-      console.error("Erro ao validar:", err);
-      window.location.href = "login.html";
+      console.error("❌ Erro ao validar:", err);
+      window.location.replace("login.html");
     }
   }
 
-  window.addEventListener("load", validarAcesso);
+  document.addEventListener("DOMContentLoaded", validarAcesso);
 
   window.logout = function() {
     localStorage.removeItem("savedEmail");
     localStorage.removeItem("isLogged");
-    window.location.href = "login.html";
+    window.location.replace("login.html");
   }
 </script>
 </body>
