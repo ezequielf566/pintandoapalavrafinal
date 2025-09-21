@@ -13,15 +13,15 @@
     body {
       margin: 0;
       font-family: "Fredoka", sans-serif;
-      background: #fff9e6; /* amarelo suave */
-      color: #000; /* preto puro */
+      background: #fff9e6;
+      color: #000;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
     }
 
     header {
-      background: #ffd54f; /* amarelo mais forte */
+      background: #ffd54f;
       padding: 1rem;
       display: flex;
       justify-content: flex-end;
@@ -57,13 +57,11 @@
     h1 {
       font-size: 2rem;
       margin-bottom: 2rem;
-      color: #000;
     }
 
     h2 {
       margin-top: 2rem;
       font-size: 1.3rem;
-      color: #000;
     }
 
     .menu {
@@ -119,7 +117,6 @@
       transform: scale(1.03);
     }
 
-    /* Alerta discreto */
     #msg {
       position: fixed;
       bottom: 20px;
@@ -134,27 +131,16 @@
       z-index: 9999;
     }
 
-    /* Responsividade */
     @media (max-width: 600px) {
-      h1 {
-        font-size: 1.6rem;
-      }
-      .menu {
-        max-width: 90%;
-      }
-      .socials {
-        flex-direction: column;
-        align-items: center;
-      }
-      .socials button {
-        width: 100%;
-        max-width: 200px;
-      }
+      h1 { font-size: 1.6rem; }
+      .menu { max-width: 90%; }
+      .socials { flex-direction: column; align-items: center; }
+      .socials button { width: 100%; max-width: 200px; }
     }
   </style>
 </head>
 <body>
-<div id='menuContainer'>
+<div id="menuContainer">
   <header>
     <div style="display:flex; gap:0.5rem; margin-left:auto;">
       <button id="installBtn" class="btn" style="display:none;">📲 Instalar app</button>
@@ -177,12 +163,8 @@
 
     <h2>Siga-nos nas redes sociais</h2>
     <div class="socials">
-      <button onclick="window.open('https://www.instagram.com/pintandoapalavra_?igsh=MTBzdjdnc2k3OG4yaQ==', '_blank')">
-        Instagram
-      </button>
-      <button onclick="window.open('https://www.facebook.com/share/1CYaATKtFQ/', '_blank')">
-        Facebook
-      </button>
+      <button onclick="window.open('https://www.instagram.com/pintandoapalavra_', '_blank')">Instagram</button>
+      <button onclick="window.open('https://www.facebook.com/share/1CYaATKtFQ/', '_blank')">Facebook</button>
     </div>
   </main>
 </div>
@@ -190,14 +172,14 @@
 <div id="msg"></div>
 <iframe id="conteudo" style="display:none;width:100%;height:100vh;border:none;"></iframe>
 
-<!-- Registro do Service Worker e botão de instalação -->
+<!-- 📌 Lógica de navegação -->
 <script>
 function abrirApp() {
   document.getElementById("menuContainer").style.display = "none";
   const iframe = document.getElementById("conteudo");
   iframe.style.display = "block";
-  iframe.src = "app/index.html"; 
-  history.pushState({tela: "app"}, "", "#app");
+  iframe.src = "app/index.html";
+  history.pushState({ tela: "app" }, "", "#app");
 }
 window.onpopstate = function(event) {
   if (!event.state || event.state.tela !== "app") {
@@ -212,17 +194,20 @@ function showMsg(texto) {
   msg.style.display = "block";
   setTimeout(() => { msg.style.display = "none"; }, 3000);
 }
+</script>
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
-      .catch(err => console.log('❌ Service Worker falhou:', err));
+<!-- 📌 Service Worker -->
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js")
+      .then(reg => console.log("✅ Service Worker registrado:", reg.scope))
+      .catch(err => console.log("❌ Service Worker falhou:", err));
   });
 }
 
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
+window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
   const installBtn = document.getElementById("installBtn");
@@ -262,6 +247,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   async function validarAcesso() {
     const email = localStorage.getItem("savedEmail");
     if (!email) {
+      console.warn("Nenhum email salvo, redirecionando para login...");
       window.location.href = "login.html";
       return;
     }
@@ -270,8 +256,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
       const ref = doc(db, "usuarios", email);
       const snap = await getDoc(ref);
       if (!snap.exists()) {
+        console.warn("Email não encontrado no Firestore, redirecionando...");
         localStorage.removeItem("savedEmail");
         window.location.href = "login.html";
+      } else {
+        console.log("✅ Acesso validado:", email);
       }
     } catch (err) {
       console.error("Erro ao validar:", err);
