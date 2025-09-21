@@ -19,6 +19,7 @@
       flex-direction: column;
       min-height: 100vh;
     }
+
     header {
       background: #ffd54f;
       padding: 1rem;
@@ -26,6 +27,7 @@
       justify-content: flex-end;
       align-items: center;
     }
+
     header .btn {
       background: #fff;
       border: none;
@@ -37,7 +39,11 @@
       color: #000;
       margin-left: 0.5rem;
     }
-    header .btn:hover { background: #f1f1f1; }
+
+    header .btn:hover {
+      background: #f1f1f1;
+    }
+
     main {
       flex: 1;
       display: flex;
@@ -47,8 +53,19 @@
       text-align: center;
       padding: 2rem;
     }
-    h1 { font-size: 2rem; margin-bottom: 2rem; color: #000; }
-    h2 { margin-top: 2rem; font-size: 1.3rem; color: #000; }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      color: #000;
+    }
+
+    h2 {
+      margin-top: 2rem;
+      font-size: 1.3rem;
+      color: #000;
+    }
+
     .menu {
       display: flex;
       flex-direction: column;
@@ -57,6 +74,7 @@
       width: 100%;
       max-width: 320px;
     }
+
     .menu button {
       background: #ffe082;
       border: none;
@@ -69,7 +87,12 @@
       width: 100%;
       color: #000;
     }
-    .menu button:hover { background: #ffd54f; transform: scale(1.02); }
+
+    .menu button:hover {
+      background: #ffd54f;
+      transform: scale(1.02);
+    }
+
     .socials {
       display: flex;
       justify-content: center;
@@ -77,6 +100,7 @@
       margin-top: 1rem;
       flex-wrap: wrap;
     }
+
     .socials button {
       background: #fff59d;
       border: none;
@@ -89,7 +113,12 @@
       min-width: 120px;
       color: #000;
     }
-    .socials button:hover { background: #ffe082; transform: scale(1.03); }
+
+    .socials button:hover {
+      background: #ffe082;
+      transform: scale(1.03);
+    }
+
     #msg {
       position: fixed;
       bottom: 20px;
@@ -102,12 +131,6 @@
       font-size: 0.95rem;
       display: none;
       z-index: 9999;
-    }
-    @media (max-width: 600px) {
-      h1 { font-size: 1.6rem; }
-      .menu { max-width: 90%; }
-      .socials { flex-direction: column; align-items: center; }
-      .socials button { width: 100%; max-width: 200px; }
     }
   </style>
 </head>
@@ -122,16 +145,25 @@
 
   <main>
     <h1>Seja bem-vindo ao<br>Pintando a Palavra</h1>
+
     <div class="menu">
       <button onclick="abrirApp()">Histórias</button>
-      <button onclick="window.open('https://drive.google.com/drive/folders/16yViJ5Ft9wIsLNxzTzNsygpvoBTYxnrT?usp=drive_link', '_blank')">Atividades</button>
-      <button onclick="window.open('https://drive.google.com/drive/folders/1MFnUpkdOk7yVpup7IRr1oHnJWdahEWUB?usp=drive_link', '_blank')">PDF Completo</button>
+      <button onclick="window.open('https://drive.google.com/drive/folders/16yViJ5Ft9wIsLNxzTzNsygpvoBTYxnrT?usp=drive_link', '_blank')">
+        Atividades
+      </button>
+      <button onclick="window.open('https://drive.google.com/drive/folders/1MFnUpkdOk7yVpup7IRr1oHnJWdahEWUB?usp=drive_link', '_blank')">
+        PDF Completo
+      </button>
     </div>
 
     <h2>Siga-nos nas redes sociais</h2>
     <div class="socials">
-      <button onclick="window.open('https://www.instagram.com/pintandoapalavra_?igsh=MTBzdjdnc2k3OG4yaQ==', '_blank')">Instagram</button>
-      <button onclick="window.open('https://www.facebook.com/share/1CYaATKtFQ/', '_blank')">Facebook</button>
+      <button onclick="window.open('https://www.instagram.com/pintandoapalavra_?igsh=MTBzdjdnc2k3OG4yaQ==', '_blank')">
+        Instagram
+      </button>
+      <button onclick="window.open('https://www.facebook.com/share/1CYaATKtFQ/', '_blank')">
+        Facebook
+      </button>
     </div>
   </main>
 </div>
@@ -153,12 +185,14 @@ window.onpopstate = function(event) {
     document.getElementById("menuContainer").style.display = "block";
   }
 };
+
 function showMsg(texto) {
   const msg = document.getElementById("msg");
   msg.innerText = texto;
   msg.style.display = "block";
   setTimeout(() => { msg.style.display = "none"; }, 3000);
 }
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
@@ -166,12 +200,14 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('❌ Service Worker falhou:', err));
   });
 }
+
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   const installBtn = document.getElementById("installBtn");
   installBtn.style.display = "inline-block";
+
   installBtn.addEventListener("click", async () => {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -205,7 +241,9 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
   async function validarAcesso() {
     const email = localStorage.getItem("savedEmail");
-    if (!email) {
+    const isLogged = localStorage.getItem("isLogged");
+
+    if (!email || isLogged !== "true") {
       window.location.href = "login.html";
       return;
     }
@@ -214,16 +252,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
       const ref = doc(db, "usuarios", email);
       const snap = await getDoc(ref);
       if (!snap.exists()) {
-        console.warn("⚠️ Email não autorizado:", email);
         localStorage.removeItem("savedEmail");
+        localStorage.removeItem("isLogged");
         window.location.href = "login.html";
-      } else {
-        console.log("✅ Acesso confirmado:", email);
       }
     } catch (err) {
-      console.error("⚠️ Erro ao validar:", err);
-      // 👉 Em vez de derrubar, só alerta
-      showMsg("⚠️ Problema de conexão, usando acesso offline.");
+      console.error("Erro ao validar:", err);
+      window.location.href = "login.html";
     }
   }
 
@@ -231,6 +266,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
   window.logout = function() {
     localStorage.removeItem("savedEmail");
+    localStorage.removeItem("isLogged");
     window.location.href = "login.html";
   }
 </script>
