@@ -1,13 +1,14 @@
-
-// api/webhook.js
-import { initializeApp, cert } from "firebase-admin/app";
+import { initializeApp, applicationDefault } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
-// Inicializa Firebase Admin (usando a variável de ambiente com a chave de serviço)
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-initializeApp({
-  credential: cert(serviceAccount)
-});
+// 🔑 Inicializa Firebase Admin apenas uma vez
+if (!global._firebaseApp) {
+  initializeApp({
+    credential: applicationDefault(),
+  });
+  global._firebaseApp = true;
+}
+
 const db = getFirestore();
 
 export default async function handler(req, res) {
@@ -16,21 +17,42 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: "Email não fornecido" });
+    // ✅ Valida chave secreta
+    const secret = req.headers["x-yampi-signature"];
+    if (secret !== process.env.YAMPI_SECRET) {
+      return res.status(401).json({ error: "Chave secreta inválida" });
     }
 
-    // 🔥 Salva ou atualiza o documento no Firestore
-    await db.collection("usuarios").doc(email.toLowerCase()).set({
-      ativo: true,
-      criadoEm: new Date()
-    });
+    const event = req.body;
+    console.log("📩 Evento recebido:", event.event);
 
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("Erro no webhook:", error);
+    // ⚡ Só processa quando o pagamento for aprovado
+    if (event.event === "pedido_aprovado" || event.event === "order.approved") {
+      const cliente = event?.data?.cliente;
+
+      if (cliente?.email) {
+        const email = cliente.email.toLowerCase();
+        const nome = cliente.nome || "";
+        const telefone = cliente.telefone || "";
+
+        const ref = db.collection("usuarios").doc(email);
+        await ref.set(
+          {
+            ativo: true,
+            nome,
+            telefone,
+            atualizadoEm: new Date().toISOString(),
+          },
+          { merge: true }
+        );
+
+        console.log("✅ Usuário salvo:", { email, nome, telefone });
+      }
+    }
+
+    return res.status(200).json({ received: true });
+  } catch (err) {
+    console.error("❌ Erro no webhook:", err);
     return res.status(500).json({ error: "Erro interno" });
   }
 }
