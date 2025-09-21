@@ -16,11 +16,6 @@
       <label for="email">Gmail</label>
       <input type="email" id="email" placeholder="Digite seu Gmail" required>
 
-      <div class="remember">
-        <input type="checkbox" id="remember">
-        <label for="remember">Lembrar acesso</label>
-      </div>
-
       <button type="submit">Entrar</button>
     </form>
 
@@ -54,7 +49,6 @@
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("email").value.trim().toLowerCase();
-      const remember = document.getElementById("remember").checked;
       const errorMsg = document.getElementById("errorMsg");
 
       errorMsg.textContent = "⏳ Verificando...";
@@ -64,15 +58,9 @@
         const snap = await getDoc(ref);
 
         if (snap.exists()) {
-          // 🔑 Marca sessão como ativa (sempre)
+          // 🔑 Sempre salva no localStorage
+          localStorage.setItem("savedEmail", email);
           localStorage.setItem("isLogged", "true");
-
-          if (remember) {
-            localStorage.setItem("savedEmail", email); // fica salvo
-          } else {
-            localStorage.removeItem("savedEmail"); // remove se tinha
-            sessionStorage.setItem("sessionEmail", email); // só até fechar aba
-          }
 
           errorMsg.textContent = "✅ Acesso liberado!";
           setTimeout(() => window.location.href = "index.html", 500);
@@ -90,7 +78,6 @@
       const saved = localStorage.getItem("savedEmail");
       if (saved) {
         document.getElementById("email").value = saved;
-        document.getElementById("remember").checked = true;
       }
     });
   </script>
