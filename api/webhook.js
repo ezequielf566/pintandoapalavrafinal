@@ -20,18 +20,21 @@ export default async function handler(req, res) {
   }
 
   try {
+    // 🔎 Garante que body é JSON
+    const body =
+      typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+
     // ✅ Valida chave secreta
     const secret = req.headers["x-yampi-signature"];
     if (secret !== process.env.YAMPI_SECRET) {
       return res.status(401).json({ error: "Chave secreta inválida" });
     }
 
-    const event = req.body;
-    console.log("📩 Evento recebido:", event.event);
+    console.log("📩 Evento recebido:", body.event);
 
     // ⚡ Processa só quando o pagamento é aprovado
-    if (event.event === "pedido_aprovado" || event.event === "order.approved") {
-      const cliente = event?.data?.cliente;
+    if (body.event === "pedido_aprovado" || body.event === "order.approved") {
+      const cliente = body?.data?.cliente;
 
       if (cliente?.email) {
         const email = cliente.email.toLowerCase();
